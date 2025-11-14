@@ -1,5 +1,5 @@
 # install dependencies
-  apt -y install apt-transport-https ca-certificates curl gnupg2 software-properties-common
+  apt -y install apt-transport-https ca-certificates curl gnupg2
 
 # Add Docker repository key
   curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
