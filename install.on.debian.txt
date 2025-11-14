@@ -20,6 +20,8 @@
   docker run hello-world
   docker run -d -p 80:80 nginx
   curl localhost
+  docker ps
+  docker stop <ID>
 
 # More info
 # https://hub.docker.com/
