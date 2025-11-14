@@ -22,6 +22,7 @@
   curl localhost
   docker ps
   docker stop <ID>
+  docker container prune
 
 # More info
 # https://hub.docker.com/
