@@ -24,6 +24,15 @@
   docker stop <ID>
   docker container prune
 
+# Networking - Enable container to get on same network as docker
+docker network create -d macvlan \
+  --subnet=192.168.1.0/24 \
+  --gateway=192.168.1.1 \
+  -o parent=enX0 \
+  macvlan_lan
+
+docker run --rm -it --network=macvlan_lan alpine ash
+
 # More info
 # https://hub.docker.com/
 # https://docs.docker.com/
