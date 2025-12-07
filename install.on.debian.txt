@@ -34,6 +34,10 @@ docker network create -d macvlan \
   -o parent=enX0 \
   macvlan_lan
 
+# Networking - IPv6
+  edit /etc/docker/daemon.json
+  systemctl restart docker
+
 docker run --rm -it --network=macvlan_lan alpine ash
 
 # More info
