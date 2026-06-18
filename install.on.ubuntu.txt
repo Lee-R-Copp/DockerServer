@@ -28,6 +28,9 @@
 # hello world
   docker run --rm hello-world
 
+# temp bash shell under ubuntu
+  docker run -it --rm ubuntu bash
+
 # setup non-admin user to use docker
   getent group docker || sudo groupadd docker
   usermod -aG docker <username>
