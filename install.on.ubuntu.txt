@@ -25,6 +25,13 @@
   docker ps
   docker ps -a
 
+# hello world
+  docker run --rm hello-world
+
+# setup non-admin user to use docker
+  getent group docker || sudo groupadd docker
+  usermod -aG docker <username>
+
 # More info
 # https://hub.docker.com/
 # https://docs.docker.com/
