@@ -13,9 +13,33 @@ apt_update_once() {
   fi
 }
 
+configure_docker_repo() {
+  log "Configuring official Docker APT repository"
+
+  apt_update_once
+  apt-get install -y ca-certificates curl gnupg lsb-release
+
+  install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  chmod a+r /etc/apt/keyrings/docker.asc
+
+  cat > /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: ${UBUNTU_CODENAME:-$VERSION_CODENAME}
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+  APT_UPDATED=""
+  apt_update_once
+}
+
 configure_docker_service() {
   log "Enabling and starting Docker"
-  systemctl enable --now docker
+  systemctl enable --now docker.service
+  systemctl enable --now containerd.service
 }
 
 configure_docker_user_shell() {
@@ -111,20 +135,28 @@ ensure_line() {
   grep -Fqx "$line" "$file" || echo "$line" >> "$file"
 }
 
-install_docker() {
-  if command -v docker >/dev/null 2>&1; then
-    log "Docker is already installed"
+install_docker_official() {
+  if dpkg -s docker-ce >/dev/null 2>&1 && command -v docker >/dev/null 2>&1; then
+    log "Official Docker is already installed"
     return 0
   fi
 
-  apt_update_once
-  log "Installing Docker"
-  apt-get install -y docker.io
+  configure_docker_repo
+
+  log "Installing Docker Engine from official repository"
+  apt-get install -y \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-buildx-plugin \
+    docker-compose-plugin
+
+  log "Docker version: $(docker --version)"
 }
 
 install_packages() {
   local pkgs=()
-  for pkg in bash-completion ca-certificates curl git nano; do
+  for pkg in bash-completion ca-certificates curl git gnupg lsb-release nano; do
     dpkg -s "$pkg" >/dev/null 2>&1 || pkgs+=("$pkg")
   done
 
@@ -146,7 +178,7 @@ main() {
   require_ubuntu
   prompt_for_username
   install_packages
-  install_docker
+  install_docker_official
   configure_docker_service
   create_docker_user
   create_script_dirs
@@ -204,8 +236,11 @@ show_summary() {
     "Home: ${DOCKER_HOME}" \
     "Docker service: enabled" \
     "SSH key: added to ${DOCKER_HOME}/.ssh/authorized_keys" \
-    "Docker access: granted via docker group" \
-    "Next step: log in as ${DOCKER_USER} again so docker group membership applies"
+    "Docker access: granted via docker group (root-equivalent)" \
+    "Next step: log in as ${DOCKER_USER} again so docker group membership applies" \
+    "Or run: su - ${DOCKER_USER}" \
+    "Then: newgrp docker" \
+    "Test commands: docker ps ; docker run --rm hello-world"
 }
 
 warn() {
