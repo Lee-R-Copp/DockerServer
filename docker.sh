@@ -158,7 +158,7 @@ main() {
 
 prompt_for_username() {
   local input
-  local default_user="docker"
+  local default_user="dr"
 
   while true; do
     read -r -p "Enter the new Docker username [${default_user}]: " input
