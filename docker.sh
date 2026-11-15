@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# curl -fsSL https://raw.githubusercontent.com/Lee-R-Copp/DockerServer/main/docker.sh | bash
+# curl -fsSL https://raw.githubusercontent.com/Lee-R-Copp/DockerServer/main/docker.sh -o /tmp/docker-setup.sh
+# sudo bash /tmp/docker-setup.sh
 #
 set -euo pipefail
 
@@ -72,31 +73,6 @@ EOF
   fi
 
   chown "${DOCKER_USER}:${DOCKER_USER}" "$profile" "$bashrc"
-}
-
-configure_docker_user_ssh() {
-  local ssh_dir="${DOCKER_HOME}/.ssh"
-  local auth_keys="${ssh_dir}/authorized_keys"
-  local pubkey
-
-  install -d -m 700 -o "${DOCKER_USER}" -g "${DOCKER_USER}" "${ssh_dir}"
-
-  if [[ ! -f "${auth_keys}" ]]; then
-    install -m 600 -o "${DOCKER_USER}" -g "${DOCKER_USER}" /dev/null "${auth_keys}"
-  else
-    chmod 600 "${auth_keys}"
-    chown "${DOCKER_USER}:${DOCKER_USER}" "${auth_keys}"
-  fi
-
-  printf '\nPaste the SSH public key for %s, then press Enter:\n' "${DOCKER_USER}"
-  read -r pubkey
-
-  [[ -n "${pubkey}" ]] || die "No SSH public key was provided."
-
-  grep -Fqx "${pubkey}" "${auth_keys}" || echo "${pubkey}" >> "${auth_keys}"
-
-  chown "${DOCKER_USER}:${DOCKER_USER}" "${auth_keys}"
-  chmod 600 "${auth_keys}"
 }
 
 create_docker_user() {
@@ -186,7 +162,6 @@ main() {
   create_docker_user
   create_script_dirs
   configure_docker_user_shell
-  configure_docker_user_ssh
   setup_docker_group
   show_summary
 }
