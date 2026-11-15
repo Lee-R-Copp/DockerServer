@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# curl -fsSL https://raw.githubusercontent.com/Lee-R-Copp/DockerServer/main/docker.sh | bash
+#
 set -euo pipefail
 
 DOCKER_USER=""
